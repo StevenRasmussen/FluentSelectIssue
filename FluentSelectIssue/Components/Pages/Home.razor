@@ -1,0 +1,59 @@
+﻿@page "/"
+@using FluentSelectIssue.Extensions
+
+<PageTitle>Home</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical">
+    <p style="max-width: 600px;">
+        <b>Directions: </b> Select different values in the first FluentSelect and the 2nd one should update because it is bound as well.<br /><br />
+        However, it does not update when it is 'Disabled'.  If you enable it by toggling the FluentSwitch, the selected option will update as expected.<br /><br />
+        The FluentText is there to show that the value is indeed changing. It is also 'Disabled'.
+    </p>
+    <FluentSelect Items="_items" @bind-SelectedOption="_selectedItem" Label="Select your option here" />
+    <FluentSwitch @bind-Value="_isDisabled" Label="Toggle Disabled for the FluentSelect below" />
+    <FluentSelect Items="_items" @bind-SelectedOption="_selectedItem" Disabled="_isDisabled" />
+    <FluentTextField Value="@_selectedItem?.Text" Disabled="true" Label="Selected Value" />
+</FluentStack>
+
+
+@code {
+    private List<EnumOption<SomeEnum>>? _items;
+
+    private EnumOption<SomeEnum>? _selectedItem;
+
+    private bool _isDisabled = true;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        var enumValues = Enum.GetValues<SomeEnum>();
+        this._items = enumValues.Select(x => new EnumOption<SomeEnum>(x)).ToList();
+    }
+
+    private enum SomeEnum
+    {
+        EnumValue1,
+        EnumValue2,
+        EnumValue3,
+        EnumValue4,
+    }
+
+    private record EnumOption<T> where T : struct, Enum
+    {
+        public EnumOption(T? value, string? Text = null)
+        {
+            this.Value = value;
+            this.Text = Text ?? (value.HasValue ? value.Value.GetDisplayString() : null);
+        }
+
+        public T? Value { get; }
+
+        public string? Text { get; }
+
+        public override string? ToString()
+        {
+            return this.Text ?? base.ToString();
+        }
+    }
+}
